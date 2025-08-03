@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Calendar, Tag } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
 interface Project {
   _id: string;
@@ -52,7 +53,7 @@ const statusConfig = {
 
 export default function ProjectCard({ project }: ProjectCardProps) {
   const statusInfo = statusConfig[project.status];
-  const formattedDate = new Date(project.createdAt).toLocaleDateString();
+  const timeAgo = formatDistanceToNow(new Date(project.createdAt), { addSuffix: true });
 
   return (
     <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
@@ -98,7 +99,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
 
         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-4">
           <Calendar className="h-3 w-3" />
-          <span>Created {formattedDate}</span>
+          <span>Created {timeAgo}</span>
         </div>
       </CardContent>
     </Card>
