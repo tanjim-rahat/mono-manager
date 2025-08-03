@@ -14,9 +14,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Calendar, Tag, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { toast } from "sonner";
+import { useState } from "react";
 
 interface Project {
   _id: string;
@@ -31,7 +43,9 @@ interface Project {
 interface ProjectCardProps {
   project: Project;
   onEdit?: (project: Project) => void;
-  onDelete?: (project: Project) => void;
+  onDelete?: (
+    project: Project
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 const statusConfig = {
@@ -67,6 +81,7 @@ export default function ProjectCard({
   onEdit,
   onDelete,
 }: ProjectCardProps) {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const statusInfo = statusConfig[project.status];
   const timeAgo = formatDistanceToNow(new Date(project.createdAt), {
     addSuffix: true,
@@ -76,8 +91,22 @@ export default function ProjectCard({
     onEdit?.(project);
   };
 
-  const handleDelete = () => {
-    onDelete?.(project);
+  const handleDelete = async () => {
+    if (!onDelete) return;
+
+    setShowDeleteDialog(false);
+
+    toast.promise(onDelete(project), {
+      loading: "Deleting project...",
+      success: (data) => {
+        if (data.success) {
+          return `Project "${project.title}" deleted successfully`;
+        } else {
+          throw new Error(data.error || "Failed to delete project");
+        }
+      },
+      error: (error) => error.message || "Failed to delete project",
+    });
   };
 
   return (
@@ -109,7 +138,7 @@ export default function ProjectCard({
                   Edit
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={handleDelete}
+                  onClick={() => setShowDeleteDialog(true)}
                   className="text-destructive"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
@@ -152,6 +181,30 @@ export default function ProjectCard({
           <span>Created {timeAgo}</span>
         </div>
       </CardContent>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the project{" "}
+              <span className="text-foreground font-bold">
+                &ldquo;{project.title}&rdquo;
+              </span>
+              . This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

@@ -2,6 +2,9 @@ import { Plus, FolderPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CreateProjectModal from "@/components/CreateProjectModal";
 import ProjectCard from "@/components/ProjectCard";
+import { revalidatePath } from "next/cache";
+import connectDB from "@/lib/database";
+import Project from "@/models/Project";
 
 interface ProjectType {
   _id: string;
@@ -13,23 +16,38 @@ interface ProjectType {
   updatedAt: string;
 }
 
-async function getProjects(): Promise<ProjectType[]> {
-  try {
-    const response = await fetch(
-      `${
-        process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-      }/api/project`,
-      {
-        cache: "no-store", // Always fetch fresh data
-      }
-    );
+async function deleteProject(projectId: string) {
+  "use server";
 
-    if (!response.ok) {
-      throw new Error("Failed to fetch projects");
+  try {
+    await connectDB();
+    const deletedProject = await Project.findByIdAndDelete(projectId);
+
+    if (!deletedProject) {
+      throw new Error("Project not found");
     }
 
-    const result = await response.json();
-    return result.data || [];
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting project:", error);
+    return { success: false, error: "Failed to delete project" };
+  }
+}
+
+async function getProjects(): Promise<ProjectType[]> {
+  try {
+    await connectDB();
+    const projects = await Project.find({}).sort({ createdAt: -1 }).lean();
+    return projects.map((project) => ({
+      _id: String(project._id),
+      title: project.title as string,
+      description: project.description as string | undefined,
+      status: project.status as ProjectType["status"],
+      tags: project.tags as string[],
+      createdAt: (project.createdAt as Date).toISOString(),
+      updatedAt: (project.updatedAt as Date).toISOString(),
+    }));
   } catch (error) {
     console.error("Error fetching projects:", error);
     return [];
@@ -38,6 +56,11 @@ async function getProjects(): Promise<ProjectType[]> {
 
 export default async function Home() {
   const projects = await getProjects();
+
+  const handleDelete = async (project: ProjectType) => {
+    "use server";
+    return await deleteProject(project._id);
+  };
 
   return (
     <div className="container mx-auto p-6 lg:py-8">
@@ -64,7 +87,11 @@ export default async function Home() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {projects.map((project: ProjectType) => (
-            <ProjectCard key={project._id} project={project} />
+            <ProjectCard
+              key={project._id}
+              project={project}
+              onDelete={handleDelete}
+            />
           ))}
         </div>
       )}
