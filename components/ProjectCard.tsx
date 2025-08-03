@@ -1,3 +1,5 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -6,7 +8,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Calendar, Tag } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Calendar, Tag, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface Project {
@@ -21,6 +30,8 @@ interface Project {
 
 interface ProjectCardProps {
   project: Project;
+  onEdit?: (project: Project) => void;
+  onDelete?: (project: Project) => void;
 }
 
 const statusConfig = {
@@ -51,23 +62,62 @@ const statusConfig = {
   },
 };
 
-export default function ProjectCard({ project }: ProjectCardProps) {
+export default function ProjectCard({
+  project,
+  onEdit,
+  onDelete,
+}: ProjectCardProps) {
   const statusInfo = statusConfig[project.status];
-  const timeAgo = formatDistanceToNow(new Date(project.createdAt), { addSuffix: true });
+  const timeAgo = formatDistanceToNow(new Date(project.createdAt), {
+    addSuffix: true,
+  });
+
+  const handleEdit = () => {
+    onEdit?.(project);
+  };
+
+  const handleDelete = () => {
+    onDelete?.(project);
+  };
 
   return (
     <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
       <CardHeader className="flex-shrink-0">
         <div className="flex items-start justify-between">
-          <CardTitle className="text-lg line-clamp-1">
-            {project.title}
-          </CardTitle>
-          <Badge
-            variant={statusInfo.variant}
-            className={`${statusInfo.color} text-xs`}
-          >
-            {statusInfo.label}
-          </Badge>
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-lg line-clamp-2">
+              {project.title}
+            </CardTitle>
+          </div>
+          <div className="flex items-center gap-2 ml-2">
+            <Badge
+              variant={statusInfo.variant}
+              className={`${statusInfo.color} text-xs`}
+            >
+              {statusInfo.label}
+            </Badge>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <MoreVertical className="h-4 w-4" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleEdit}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleDelete}
+                  className="text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         {project.description && (
           <CardDescription className="line-clamp-2 text-sm">

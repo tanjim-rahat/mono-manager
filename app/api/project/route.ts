@@ -95,3 +95,70 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// DELETE handler - Delete a specific project
+export async function DELETE(request: NextRequest) {
+  try {
+    // Connect to database
+    await connectDB();
+
+    // Get project ID from URL search params
+    const { searchParams } = new URL(request.url);
+    const projectId = searchParams.get("id");
+
+    // Validate project ID
+    if (!projectId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Project ID is required",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Find and delete the project
+    const deletedProject = await Project.findByIdAndDelete(projectId);
+
+    // Check if project was found and deleted
+    if (!deletedProject) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Project not found",
+        },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: deletedProject,
+        message: "Project deleted successfully",
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error deleting project:", error);
+
+    // Handle invalid ObjectId error
+    if (error instanceof Error && error.name === "CastError") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid project ID format",
+        },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to delete project",
+      },
+      { status: 500 }
+    );
+  }
+}
