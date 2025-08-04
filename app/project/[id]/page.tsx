@@ -16,7 +16,7 @@ import Link from "next/link";
 import connectDB from "@/lib/database";
 import { statusConfig } from "@/lib/utils";
 import ProjectVerticalMore from "@/components/ProjectVerticalMore";
-import TasksSection from "@/components/TasksSection";
+import TasksSection from "./TasksSection";
 import { redirect } from "next/navigation";
 
 async function getProjectData(id: string): Promise<ProjectWithTasks | null> {
