@@ -92,3 +92,40 @@ export async function updateTaskStatus(
     };
   }
 }
+
+export async function deleteTask(taskId: string, projectId: string) {
+  try {
+    await connectDB();
+
+    // Remove the task from the database
+    const deletedTask = await Task.findByIdAndDelete(taskId);
+
+    if (!deletedTask) {
+      return {
+        success: false,
+        error: "Task not found",
+      };
+    }
+
+    // Remove the task from the project's tasks array
+    await Project.findByIdAndUpdate(
+      projectId,
+      { $pull: { tasks: taskId } },
+      { new: true }
+    );
+
+    // Revalidate the project page to reflect the deletion
+    revalidatePath(`/project/${projectId}`);
+
+    return {
+      success: true,
+      message: "Task deleted successfully",
+    };
+  } catch (error) {
+    console.error("Error deleting task:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to delete task",
+    };
+  }
+}
