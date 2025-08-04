@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Schema, Types } from "mongoose";
 
 // TypeScript interface for the Project document
 export interface IProject extends Document {
@@ -6,6 +6,7 @@ export interface IProject extends Document {
   description?: string;
   status: "planning" | "in-progress" | "review" | "completed" | "on-hold";
   tags: string[];
+  tasks: Types.ObjectId[]; // References to Task documents
   createdAt: Date;
   updatedAt: Date;
 }
@@ -43,6 +44,10 @@ const ProjectSchema = new Schema<IProject>(
         message: "Tags cannot be empty strings",
       },
     },
+    tasks: {
+      type: [{ type: Schema.Types.ObjectId, ref: "Task" }],
+      default: [],
+    },
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt fields
@@ -53,6 +58,7 @@ const ProjectSchema = new Schema<IProject>(
 ProjectSchema.index({ title: 1 });
 ProjectSchema.index({ status: 1 });
 ProjectSchema.index({ tags: 1 });
+ProjectSchema.index({ tasks: 1 });
 ProjectSchema.index({ createdAt: -1 });
 
 // Export the model (check if it already exists to avoid re-compilation issues)
