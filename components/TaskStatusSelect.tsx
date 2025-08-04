@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { updateTaskStatus } from "@/app/actions/taskActions";
 import { type TaskStatus } from "@/lib/types";
+import { taskStatusConfig, cn } from "@/lib/utils";
 
 interface TaskStatusSelectProps {
   taskId: string;
@@ -18,14 +20,6 @@ interface TaskStatusSelectProps {
   projectId: string;
   taskTitle: string;
 }
-
-const statusLabels: Record<TaskStatus, string> = {
-  todo: "To Do",
-  "in-progress": "In Progress",
-  review: "Review",
-  completed: "Completed",
-  cancelled: "Cancelled",
-};
 
 export default function TaskStatusSelect({
   taskId,
@@ -45,9 +39,9 @@ export default function TaskStatusSelect({
 
       if (result.success) {
         toast.success(
-          `Task "${taskTitle}" updated to ${statusLabels[newStatus]}`,
+          `Task "${taskTitle}" updated to ${taskStatusConfig[newStatus].label}`,
           {
-            description: `Status changed from ${statusLabels[currentStatus]} to ${statusLabels[newStatus]}`,
+            description: `Status changed from ${taskStatusConfig[currentStatus].label} to ${taskStatusConfig[newStatus].label}`,
           }
         );
       } else {
@@ -66,21 +60,37 @@ export default function TaskStatusSelect({
   };
 
   return (
-    <Select
-      value={currentStatus}
-      onValueChange={handleStatusChange}
-      disabled={isLoading}
-    >
-      <SelectTrigger className="w-[130px] h-7 text-xs">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="todo">To Do</SelectItem>
-        <SelectItem value="in-progress">In Progress</SelectItem>
-        <SelectItem value="review">Review</SelectItem>
-        <SelectItem value="completed">Completed</SelectItem>
-        <SelectItem value="cancelled">Cancelled</SelectItem>
-      </SelectContent>
-    </Select>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild disabled={isLoading}>
+        <Badge
+          variant={taskStatusConfig[currentStatus].variant}
+          className={cn(
+            "cursor-pointer hover:opacity-80 transition-opacity",
+            "gap-1 pr-1",
+            taskStatusConfig[currentStatus].color
+          )}
+        >
+          {taskStatusConfig[currentStatus].label}
+          <ChevronDown className="h-3 w-3" />
+        </Badge>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-32">
+        {Object.entries(taskStatusConfig).map(([status, config]) => (
+          <DropdownMenuItem
+            key={status}
+            onClick={() => handleStatusChange(status as TaskStatus)}
+            disabled={isLoading || status === currentStatus}
+            className="cursor-pointer"
+          >
+            <Badge
+              variant={config.variant}
+              className={cn("pointer-events-none text-xs", config.color)}
+            >
+              {config.label}
+            </Badge>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
