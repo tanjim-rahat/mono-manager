@@ -5,10 +5,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { X } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { createProject } from "@/app/actions/ProjectActions";
+import { type ProjectStatus } from "@/lib/types";
 import {
   Select,
   SelectContent,
@@ -57,6 +60,7 @@ export default function CreateProjectModal({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -67,16 +71,33 @@ export default function CreateProjectModal({
     },
   });
 
-  const onSubmit = (data: FormData) => {
-    console.log("Creating project...", {
-      ...data,
-      tags,
-    });
-    // Reset form and close modal
-    form.reset();
-    setTags([]);
-    setTagInput("");
-    setIsModalOpen(false);
+  const onSubmit = async (data: FormData) => {
+    setIsLoading(true);
+
+    try {
+      const result = await createProject({
+        title: data.title,
+        description: data.description,
+        status: (data.status || "planning") as ProjectStatus,
+        tags,
+      });
+
+      if (result.success) {
+        toast.success("Project created successfully!");
+        // Reset form and close modal
+        form.reset();
+        setTags([]);
+        setTagInput("");
+        setIsModalOpen(false);
+      } else {
+        toast.error(result.error || "Failed to create project");
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred");
+      console.error("Error creating project:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const addTag = () => {
@@ -213,11 +234,15 @@ export default function CreateProjectModal({
                 type="button"
                 variant="outline"
                 onClick={() => setIsModalOpen(false)}
+                disabled={isLoading}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={!form.formState.isValid}>
-                Create Project
+              <Button
+                type="submit"
+                disabled={!form.formState.isValid || isLoading}
+              >
+                {isLoading ? "Creating..." : "Create Project"}
               </Button>
             </div>
           </form>
