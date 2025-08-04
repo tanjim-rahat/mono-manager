@@ -11,12 +11,39 @@ A simple project and task management app built with Next.js. This is a hobby pro
 
 ## Running it
 
+First, you'll need to set up your environment variables:
+
+1. Create a `.env.local` file in the root directory
+2. Add your MongoDB connection string:
+
+```bash
+DB_URL=mongodb://localhost:27017/mono-manager
+# or for MongoDB Atlas:
+# DB_URL=mongodb+srv://username:password@cluster.mongodb.net/mono-manager
+```
+
+Then install dependencies and run the development server:
+
 ```bash
 npm install
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) and you're good to go.
+
+## Environment Variables
+
+The application requires the following environment variable:
+
+- `DB_URL`: MongoDB connection string
+
+### Database Setup
+
+You can use either:
+1. **Local MongoDB**: Install MongoDB locally and use `mongodb://localhost:27017/mono-manager`
+2. **MongoDB Atlas**: Create a free cluster at [MongoDB Atlas](https://www.mongodb.com/atlas) and use the provided connection string
+
+Make sure your database is running before starting the application.
 
 ## About this project
 
@@ -34,4 +61,5 @@ If you have ideas for improvements or find bugs, I'd appreciate hearing about th
 - TypeScript
 - Tailwind CSS
 - shadcn/ui components
-- SQLite (via better-sqlite3)
+- MongoDB with Mongoose
+- Server Actions for API calls
