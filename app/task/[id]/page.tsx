@@ -25,11 +25,16 @@ import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import connectDB from "@/lib/database";
 import TaskStatusSelect from "@/components/TaskStatusSelect";
+import SubtasksList from "@/components/SubtasksList";
 import { redirect } from "next/navigation";
 
 async function getTaskData(
   id: string
-): Promise<{ task: TaskType; projectTitle: string } | null> {
+): Promise<{
+  task: TaskType;
+  projectTitle: string;
+  subtasks: TaskType[];
+} | null> {
   try {
     await connectDB();
     const task = (await Task.findById(id).lean()) as unknown as ITask;
@@ -43,6 +48,34 @@ async function getTaskData(
       .select("title")
       .lean()) as unknown as { title: string };
     const projectTitle = project?.title || "Unknown Project";
+
+    // Get subtasks if they exist
+    const subtasks =
+      task.subtasks?.length > 0
+        ? ((await Task.find({
+            _id: { $in: task.subtasks },
+          }).lean()) as unknown as ITask[])
+        : [];
+
+    const subtasksData: TaskType[] = subtasks.map((subtask) => ({
+      _id: String(subtask._id),
+      title: subtask.title,
+      description: subtask.description,
+      status: subtask.status as TaskType["status"],
+      attachments:
+        subtask.attachments?.map((att: IAttachment) => ({
+          name: att.name,
+          url: att.url,
+          type: att.type,
+          size: att.size,
+          uploadedAt: att.uploadedAt.toISOString(),
+        })) || [],
+      subtasks: subtask.subtasks?.map((subtaskId) => String(subtaskId)) || [],
+      parentTask: subtask.parentTask ? String(subtask.parentTask) : undefined,
+      projectId: subtask.projectId ? String(subtask.projectId) : "",
+      createdAt: subtask.createdAt.toISOString(),
+      updatedAt: subtask.updatedAt.toISOString(),
+    }));
 
     return {
       task: {
@@ -65,6 +98,7 @@ async function getTaskData(
         updatedAt: task.updatedAt.toISOString(),
       },
       projectTitle,
+      subtasks: subtasksData,
     };
   } catch (error) {
     throw new Error(
@@ -96,7 +130,7 @@ export default async function TaskPage({ params }: { params: { id: string } }) {
     return redirect("/");
   }
 
-  const { task, projectTitle } = data;
+  const { task, projectTitle, subtasks } = data;
   const createdTimeAgo = formatDistanceToNow(new Date(task.createdAt), {
     addSuffix: true,
   });
@@ -201,18 +235,13 @@ export default async function TaskPage({ params }: { params: { id: string } }) {
           )}
 
           {/* Subtasks */}
-          {task.subtasks.length > 0 && (
+          {subtasks.length > 0 && (
             <div className="space-y-3 pt-4 border-t">
               <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                 <ListTodo className="h-4 w-4" />
-                Subtasks ({task.subtasks.length})
+                Subtasks ({subtasks.length})
               </div>
-              <div className="text-sm text-muted-foreground">
-                <p>
-                  This task has {task.subtasks.length} subtask
-                  {task.subtasks.length > 1 ? "s" : ""}.
-                </p>
-              </div>
+              <SubtasksList subtasks={subtasks} parentTaskId={task._id} />
             </div>
           )}
 
