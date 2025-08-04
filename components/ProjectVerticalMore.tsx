@@ -18,7 +18,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { MoreVertical, Edit, Trash2 } from "lucide-react";
-import { type Project as ProjectType } from "@/lib/types";
+import {
+  type Project as ProjectType,
+  type ProjectWithTasks,
+} from "@/lib/types";
 import { deleteProject } from "@/app/actions/ProjectActions";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -26,7 +29,7 @@ import { toast } from "sonner";
 export default function ProjectVerticalMore({
   project,
 }: {
-  project: ProjectType;
+  project: ProjectType | ProjectWithTasks;
 }) {
   const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
 

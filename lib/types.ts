@@ -9,6 +9,18 @@ export type Project = {
   updatedAt: string;
 };
 
+// Project with populated tasks
+export type ProjectWithTasks = {
+  _id: string;
+  title: string;
+  description?: string;
+  status: "planning" | "in-progress" | "review" | "completed" | "on-hold";
+  tags: string[];
+  tasks: Task[]; // Populated Task objects
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type Attachment = {
   name: string;
   url: string;

@@ -1,5 +1,6 @@
+import Task, { type ITask, type IAttachment } from "@/models/Task";
 import Project, { type IProject } from "@/models/Project";
-import { type Project as ProjectType } from "@/lib/types";
+import { type ProjectWithTasks } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,21 +16,59 @@ import Link from "next/link";
 import connectDB from "@/lib/database";
 import { statusConfig } from "@/lib/utils";
 import ProjectVerticalMore from "@/components/ProjectVerticalMore";
+import TasksSection from "@/components/TasksSection";
 import { redirect } from "next/navigation";
 
-async function getProjectData(id: string): Promise<ProjectType | null> {
+async function getProjectData(id: string): Promise<ProjectWithTasks | null> {
   try {
     await connectDB();
-    const project = (await Project.findById(id).lean()) as unknown as IProject;
+    const project = (await Project.findById(
+      id
+    ).lean()) as unknown as IProject & {
+      tasks: ITask[];
+    };
+
+    const tasks = (await Task.find({
+      projectId: id,
+    }).lean()) as unknown as ITask[];
+
+    project.tasks = tasks;
+
     if (!project) {
       return null;
     }
+
+    console.log(project.tasks);
+
     return {
       _id: String(project._id),
       title: project.title as string,
       description: project.description as string | undefined,
-      status: project.status as ProjectType["status"],
+      status: project.status as ProjectWithTasks["status"],
       tags: project.tags as string[],
+      tasks:
+        project.tasks?.map((task: ITask) => ({
+          _id: String(task._id),
+          title: task.title,
+          description: task.description,
+          status: task.status,
+          attachments:
+            task.attachments?.map((att: IAttachment) => ({
+              name: att.name,
+              url: att.url,
+              type: att.type,
+              size: att.size,
+              uploadedAt: att.uploadedAt.toISOString(),
+            })) || [],
+          subtasks:
+            task.subtasks?.map((subtaskId: ITask["_id"]) =>
+              String(subtaskId)
+            ) || [],
+          parentTask: task.parentTask ? String(task.parentTask) : undefined,
+          projectId: task.projectId ? String(task.projectId) : undefined,
+          createdAt: task.createdAt.toISOString(),
+          updatedAt: task.updatedAt.toISOString(),
+        })) || [],
       createdAt: project.createdAt.toISOString(),
       updatedAt: project.updatedAt.toISOString(),
     };
@@ -117,6 +156,13 @@ export default async function page({ params }: { params: { id: string } }) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Tasks Section */}
+      <TasksSection
+        tasks={project.tasks}
+        projectId={project._id}
+        projectTitle={project.title}
+      />
     </div>
   );
 }

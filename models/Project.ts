@@ -1,4 +1,5 @@
-import mongoose, { Document, Schema, Types } from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
+import { ITask } from "./Task";
 
 // TypeScript interface for the Project document
 export interface IProject extends Document {
@@ -6,7 +7,7 @@ export interface IProject extends Document {
   description?: string;
   status: "planning" | "in-progress" | "review" | "completed" | "on-hold";
   tags: string[];
-  tasks: Types.ObjectId[]; // References to Task documents
+  tasks: ITask["_id"][]; // References to Task documents
   createdAt: Date;
   updatedAt: Date;
 }
