@@ -29,16 +29,8 @@ import { Calendar, Tag, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { useState } from "react";
-
-interface Project {
-  _id: string;
-  title: string;
-  description?: string;
-  status: "planning" | "in-progress" | "review" | "completed" | "on-hold";
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-}
+import Link from "next/link";
+import { type Project } from "@/lib/types";
 
 interface ProjectCardProps {
   project: Project;
@@ -115,7 +107,12 @@ export default function ProjectCard({
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <CardTitle className="text-lg line-clamp-2">
-              {project.title}
+              <Link
+                href={`/project/${project._id}`}
+                className="hover:underline"
+              >
+                {project.title}
+              </Link>
             </CardTitle>
           </div>
           <div className="flex items-center gap-2 ml-2">
