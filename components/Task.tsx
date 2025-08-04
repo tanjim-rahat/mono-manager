@@ -1,8 +1,37 @@
-import { CheckCircle2, Circle, AlertCircle, Pause } from "lucide-react";
+"use client";
+
+import {
+  CheckCircle2,
+  Circle,
+  AlertCircle,
+  Pause,
+  MoreVertical,
+  Trash2,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import TaskStatusSelect from "@/components/TaskStatusSelect";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { type Task as TaskType } from "@/lib/types";
+import { deleteTask } from "@/app/actions/taskActions";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface TaskProps {
   task: TaskType;
@@ -10,6 +39,23 @@ interface TaskProps {
 }
 
 export default function Task({ task, projectId }: TaskProps) {
+  const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
+
+  const handleDelete = async () => {
+    setShowDeleteDialog(false);
+
+    toast.promise(deleteTask(task._id, projectId), {
+      loading: "Deleting task...",
+      success: (data) => {
+        if (data.success) {
+          return "Task deleted successfully";
+        } else {
+          throw new Error(data.error || "Failed to delete task");
+        }
+      },
+      error: (error) => error.message || "Failed to delete task",
+    });
+  };
   return (
     <div
       key={task._id}
@@ -33,12 +79,30 @@ export default function Task({ task, projectId }: TaskProps) {
               {task.title}
             </h4>
           </Link>
-          <TaskStatusSelect
-            taskId={task._id}
-            currentStatus={task.status}
-            projectId={projectId}
-            taskTitle={task.title}
-          />
+          <div className="flex items-center gap-2">
+            <TaskStatusSelect
+              taskId={task._id}
+              currentStatus={task.status}
+              projectId={projectId}
+              taskTitle={task.title}
+            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => setShowDeleteDialog(true)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         {task.description && (
           <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
@@ -66,6 +130,27 @@ export default function Task({ task, projectId }: TaskProps) {
           )}
         </div>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Task</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &ldquo;{task.title}&rdquo;? All
+              subtasks will also be deleted. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

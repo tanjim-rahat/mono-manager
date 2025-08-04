@@ -1,6 +1,6 @@
-import Task, { type ITask, type IAttachment } from "@/models/Task";
-import Project, { type IProject } from "@/models/Project";
-import { type ProjectWithTasks } from "@/lib/types";
+import ProjectVerticalMore from "@/components/ProjectVerticalMore";
+import ProjectStatusSelect from "@/components/ProjectStatusSelect";
+import TasksList from "@/components/TasksList";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,13 +10,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ArrowLeft, Calendar, Tag, Clock } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import Link from "next/link";
 import connectDB from "@/lib/database";
-import { statusConfig } from "@/lib/utils";
-import ProjectVerticalMore from "@/components/ProjectVerticalMore";
-import TasksList from "@/components/TasksList";
+import { type ProjectWithTasks } from "@/lib/types";
+import Project, { type IProject } from "@/models/Project";
+import Task, { type IAttachment, type ITask } from "@/models/Task";
+import { formatDistanceToNow } from "date-fns";
+import { ArrowLeft, Calendar, Clock, Tag } from "lucide-react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 async function getProjectData(id: string): Promise<ProjectWithTasks | null> {
@@ -87,7 +87,6 @@ export default async function page({ params }: { params: { id: string } }) {
     return redirect("/");
   }
 
-  const statusInfo = statusConfig[project.status];
   const createdTimeAgo = formatDistanceToNow(new Date(project.createdAt), {
     addSuffix: true,
   });
@@ -119,9 +118,11 @@ export default async function page({ params }: { params: { id: string } }) {
                 </CardDescription>
               )}
             </div>
-            <Badge className={`${statusInfo.color} text-sm px-3 py-1`}>
-              {statusInfo.label}
-            </Badge>
+            <ProjectStatusSelect
+              projectId={project._id}
+              currentStatus={project.status}
+              projectTitle={project.title}
+            />
 
             <ProjectVerticalMore project={project} />
           </div>

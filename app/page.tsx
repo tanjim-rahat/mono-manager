@@ -1,11 +1,11 @@
-import { Plus, FolderPlus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { deleteProject } from "@/app/actions/ProjectActions";
 import CreateProjectModal from "@/components/CreateProjectModal";
 import ProjectCard from "@/components/ProjectCard";
+import { Button } from "@/components/ui/button";
 import connectDB from "@/lib/database";
-import Project from "@/models/Project";
 import { type Project as ProjectType } from "@/lib/types";
-import { deleteProject } from "@/app/actions/ProjectActions";
+import Project from "@/models/Project";
+import { FolderPlus, Plus } from "lucide-react";
 
 async function getProjects(): Promise<ProjectType[]> {
   try {

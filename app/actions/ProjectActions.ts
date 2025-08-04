@@ -3,6 +3,7 @@
 import Project from "@/models/Project";
 import connectDB from "@/lib/database";
 import { revalidatePath } from "next/cache";
+import { type ProjectStatus } from "@/lib/types";
 
 export async function deleteProject(projectId: string) {
   try {
@@ -19,5 +20,49 @@ export async function deleteProject(projectId: string) {
   } catch (error) {
     console.error("Error deleting project:", error);
     return { success: false, error: "Failed to delete project" };
+  }
+}
+
+export async function updateProjectStatus(
+  projectId: string,
+  status: ProjectStatus
+) {
+  try {
+    await connectDB();
+
+    const updatedProject = await Project.findByIdAndUpdate(
+      projectId,
+      { status },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedProject) {
+      return {
+        success: false,
+        error: "Project not found",
+      };
+    }
+
+    // Revalidate the project page and home page to show updated status
+    revalidatePath(`/project/${projectId}`);
+    revalidatePath("/");
+
+    return {
+      success: true,
+      data: {
+        _id: updatedProject._id.toString(),
+        title: updatedProject.title,
+        status: updatedProject.status,
+      },
+    };
+  } catch (error) {
+    console.error("Error updating project status:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to update project status",
+    };
   }
 }
