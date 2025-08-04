@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mono Manager
 
-## Getting Started
+A simple project and task management app built with Next.js. This is a hobby project I made for my own use to keep track of projects and tasks.
 
-First, run the development server:
+## What it does
+
+- Create and manage projects
+- Add tasks to projects with different statuses
+- Basic project and task organization
+- That's it. Nothing fancy.
+
+## Running it
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) and you're good to go.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## About this project
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This is a personal hobby project. I built it because I needed something simple to manage my projects and tasks. It does what I need it to do.
 
-## Learn More
+If it works for you too, great. Feel free to use it, fork it, or do whatever you want with it.
 
-To learn more about Next.js, take a look at the following resources:
+## Suggestions welcome
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+If you have ideas for improvements or find bugs, I'd appreciate hearing about them. Open an issue or submit a pull request.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Tech stack
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Next.js 15
+- TypeScript
+- Tailwind CSS
+- shadcn/ui components
+- SQLite (via better-sqlite3)
