@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import Link from "next/link";
 import { type Project } from "@/lib/types";
+import { statusConfig } from "@/lib/utils";
 
 interface ProjectCardProps {
   project: Project;
@@ -39,34 +40,6 @@ interface ProjectCardProps {
     project: Project
   ) => Promise<{ success: boolean; error?: string }>;
 }
-
-const statusConfig = {
-  planning: {
-    label: "Planning",
-    variant: "secondary" as const,
-    color: "bg-gray-100 text-gray-800",
-  },
-  "in-progress": {
-    label: "In Progress",
-    variant: "default" as const,
-    color: "bg-blue-100 text-blue-800",
-  },
-  review: {
-    label: "Review",
-    variant: "secondary" as const,
-    color: "bg-yellow-100 text-yellow-800",
-  },
-  completed: {
-    label: "Completed",
-    variant: "secondary" as const,
-    color: "bg-green-100 text-green-800",
-  },
-  "on-hold": {
-    label: "On Hold",
-    variant: "destructive" as const,
-    color: "bg-red-100 text-red-800",
-  },
-};
 
 export default function ProjectCard({
   project,
