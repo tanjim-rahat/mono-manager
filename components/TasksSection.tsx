@@ -7,6 +7,7 @@ import {
   ListTodo,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import Link from "next/link";
 import TaskStatusSelect from "@/components/TaskStatusSelect";
 import CreateTaskModal from "@/components/CreateTaskModal";
 import { type Task } from "@/lib/types";
@@ -59,9 +60,11 @@ export default function TasksSection({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <h4 className="font-medium text-sm truncate">
-                      {task.title}
-                    </h4>
+                    <Link href={`/task/${task._id}`} className="flex-1 min-w-0">
+                      <h4 className="font-medium text-sm truncate hover:text-primary cursor-pointer transition-colors">
+                        {task.title}
+                      </h4>
+                    </Link>
                     <TaskStatusSelect
                       taskId={task._id}
                       currentStatus={task.status}
