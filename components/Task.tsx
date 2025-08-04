@@ -1,23 +1,7 @@
 "use client";
 
-import {
-  CheckCircle2,
-  Circle,
-  AlertCircle,
-  Pause,
-  MoreVertical,
-  Trash2,
-} from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import Link from "next/link";
+import { deleteTask } from "@/app/actions/taskActions";
 import TaskStatusSelect from "@/components/TaskStatusSelect";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,8 +12,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { type Task as TaskType } from "@/lib/types";
-import { deleteTask } from "@/app/actions/taskActions";
+import { formatDistanceToNow } from "date-fns";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Circle,
+  MoreVertical,
+  Pause,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -74,11 +73,7 @@ export default function Task({ task, projectId }: TaskProps) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <Link href={`/task/${task._id}`} className="flex-1 min-w-0">
-            <h4 className="font-medium text-sm truncate hover:text-primary cursor-pointer transition-colors">
-              {task.title}
-            </h4>
-          </Link>
+          <h4 className="font-medium text-sm">{task.title}</h4>
           <div className="flex items-center gap-2">
             <TaskStatusSelect
               taskId={task._id}
