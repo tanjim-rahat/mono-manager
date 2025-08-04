@@ -1,5 +1,5 @@
-import Project from "@/models/Project";
-import { type Project as ProjectData } from "@/lib/types";
+import Project, { type IProject } from "@/models/Project";
+import { type Project as ProjectType } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,36 +14,24 @@ import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import connectDB from "@/lib/database";
 import { statusConfig } from "@/lib/utils";
+import ProjectVerticalMore from "@/components/ProjectVerticalMore";
+import { redirect } from "next/navigation";
 
-// Interface for raw Mongoose lean result
-interface RawProject {
-  _id: string;
-  title: string;
-  description?: string;
-  status: string;
-  tags: string[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-async function getProjectData(id: string): Promise<ProjectData> {
+async function getProjectData(id: string): Promise<ProjectType | null> {
   try {
     await connectDB();
-    const project = await Project.findById(id).lean();
+    const project = (await Project.findById(id).lean()) as unknown as IProject;
     if (!project) {
-      throw new Error("Project not found");
+      return null;
     }
-
-    // Transform the lean result to match our ProjectData type
-    const rawProject = project as unknown as RawProject;
     return {
-      _id: String(rawProject._id),
-      title: rawProject.title,
-      description: rawProject.description,
-      status: rawProject.status as ProjectData["status"],
-      tags: rawProject.tags,
-      createdAt: rawProject.createdAt.toISOString(),
-      updatedAt: rawProject.updatedAt.toISOString(),
+      _id: String(project._id),
+      title: project.title as string,
+      description: project.description as string | undefined,
+      status: project.status as ProjectType["status"],
+      tags: project.tags as string[],
+      createdAt: project.createdAt.toISOString(),
+      updatedAt: project.updatedAt.toISOString(),
     };
   } catch (error) {
     throw new Error(
@@ -55,6 +43,11 @@ async function getProjectData(id: string): Promise<ProjectData> {
 export default async function page({ params }: { params: { id: string } }) {
   const { id } = params;
   const project = await getProjectData(id);
+
+  if (project == null) {
+    return redirect("/");
+  }
+
   const statusInfo = statusConfig[project.status];
   const createdTimeAgo = formatDistanceToNow(new Date(project.createdAt), {
     addSuffix: true,
@@ -65,7 +58,6 @@ export default async function page({ params }: { params: { id: string } }) {
 
   return (
     <div className="container mx-auto p-6 lg:py-8">
-      {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <Link href="/">
           <Button variant="ghost" size="sm" className="flex items-center gap-2">
@@ -75,7 +67,6 @@ export default async function page({ params }: { params: { id: string } }) {
         </Link>
       </div>
 
-      {/* Project Details Card */}
       <Card>
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
@@ -92,11 +83,12 @@ export default async function page({ params }: { params: { id: string } }) {
             <Badge className={`${statusInfo.color} text-sm px-3 py-1`}>
               {statusInfo.label}
             </Badge>
+
+            <ProjectVerticalMore project={project} />
           </div>
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Tags Section */}
           {project.tags.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -113,7 +105,6 @@ export default async function page({ params }: { params: { id: string } }) {
             </div>
           )}
 
-          {/* Timestamps Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Calendar className="h-4 w-4" />

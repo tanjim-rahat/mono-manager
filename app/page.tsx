@@ -2,38 +2,10 @@ import { Plus, FolderPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CreateProjectModal from "@/components/CreateProjectModal";
 import ProjectCard from "@/components/ProjectCard";
-import { revalidatePath } from "next/cache";
 import connectDB from "@/lib/database";
 import Project from "@/models/Project";
-
-interface ProjectType {
-  _id: string;
-  title: string;
-  description?: string;
-  status: "planning" | "in-progress" | "review" | "completed" | "on-hold";
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-async function deleteProject(projectId: string) {
-  "use server";
-
-  try {
-    await connectDB();
-    const deletedProject = await Project.findByIdAndDelete(projectId);
-
-    if (!deletedProject) {
-      throw new Error("Project not found");
-    }
-
-    revalidatePath("/");
-    return { success: true };
-  } catch (error) {
-    console.error("Error deleting project:", error);
-    return { success: false, error: "Failed to delete project" };
-  }
-}
+import { type Project as ProjectType } from "@/lib/types";
+import { deleteProject } from "@/app/actions/ProjectActions";
 
 async function getProjects(): Promise<ProjectType[]> {
   try {
@@ -54,7 +26,7 @@ async function getProjects(): Promise<ProjectType[]> {
   }
 }
 
-export default async function Home() {
+export default async function page() {
   const projects = await getProjects();
 
   const handleDelete = async (project: ProjectType) => {

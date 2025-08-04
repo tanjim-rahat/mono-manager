@@ -8,30 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Calendar, Tag, MoreVertical, Edit, Trash2 } from "lucide-react";
+import { Calendar, Tag } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { toast } from "sonner";
-import { useState } from "react";
 import Link from "next/link";
 import { type Project } from "@/lib/types";
 import { statusConfig } from "@/lib/utils";
+import ProjectVerticalMore from "@/components/ProjectVerticalMore";
 
 interface ProjectCardProps {
   project: Project;
@@ -41,38 +23,11 @@ interface ProjectCardProps {
   ) => Promise<{ success: boolean; error?: string }>;
 }
 
-export default function ProjectCard({
-  project,
-  onEdit,
-  onDelete,
-}: ProjectCardProps) {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+export default function ProjectCard({ project }: ProjectCardProps) {
   const statusInfo = statusConfig[project.status];
   const timeAgo = formatDistanceToNow(new Date(project.createdAt), {
     addSuffix: true,
   });
-
-  const handleEdit = () => {
-    onEdit?.(project);
-  };
-
-  const handleDelete = async () => {
-    if (!onDelete) return;
-
-    setShowDeleteDialog(false);
-
-    toast.promise(onDelete(project), {
-      loading: "Deleting project...",
-      success: (data) => {
-        if (data.success) {
-          return `Project "${project.title}" deleted successfully`;
-        } else {
-          throw new Error(data.error || "Failed to delete project");
-        }
-      },
-      error: (error) => error.message || "Failed to delete project",
-    });
-  };
 
   return (
     <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
@@ -95,27 +50,7 @@ export default function ProjectCard({
             >
               {statusInfo.label}
             </Badge>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <MoreVertical className="h-4 w-4" />
-                  <span className="sr-only">Open menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleEdit}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setShowDeleteDialog(true)}
-                  className="text-destructive"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <ProjectVerticalMore project={project} />
           </div>
         </div>
         {project.description && (
@@ -151,30 +86,6 @@ export default function ProjectCard({
           <span>Created {timeAgo}</span>
         </div>
       </CardContent>
-
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete the project{" "}
-              <span className="text-foreground font-bold">
-                &ldquo;{project.title}&rdquo;
-              </span>
-              . This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </Card>
   );
 }
