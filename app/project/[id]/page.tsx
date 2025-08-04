@@ -16,7 +16,7 @@ import Link from "next/link";
 import connectDB from "@/lib/database";
 import { statusConfig } from "@/lib/utils";
 import ProjectVerticalMore from "@/components/ProjectVerticalMore";
-import TasksSection from "./TasksSection";
+import TasksList from "@/components/TasksList";
 import { redirect } from "next/navigation";
 
 async function getProjectData(id: string): Promise<ProjectWithTasks | null> {
@@ -158,7 +158,7 @@ export default async function page({ params }: { params: { id: string } }) {
       </Card>
 
       {/* Tasks Section */}
-      <TasksSection
+      <TasksList
         tasks={project.tasks}
         projectId={project._id}
         projectTitle={project.title}

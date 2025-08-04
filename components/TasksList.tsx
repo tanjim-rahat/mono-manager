@@ -10,7 +10,7 @@ interface TasksSectionProps {
   projectTitle: string;
 }
 
-export default function TasksSection({
+export default function TasksList({
   tasks,
   projectId,
   projectTitle,
